@@ -1,0 +1,858 @@
+
+
+
+
+
+
+                             spp - A State Pre-Processor
+                              (c) John Howie, 1992
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                               July 17, 2024
+
+
+
+
+
+                                   - 2 -
+
+
+     _1. _I_n_t_r_o_d_u_c_t_i_o_n
+
+          This document describes how to use the State Pre-Processor  (SPP)
+     and the uses to which it may be put.
+
+
+
+     _2. _O_v_e_r_v_i_e_w _O_f _T_h_e _S_t_a_t_e _P_r_e-_P_r_o_c_e_s_s_o_r
+
+          The state pre-processor is a tool that can be used  by  the  pro-
+     grammer to cut down both software development and maintenance time. It
+     can also cut down the number of compile and runtime  errors  that  may
+     occur.
+
+     The state pre-processor takes a file whose contents follow  a  defined
+     syntax  and  checks  it for errors. This file describes a finite state
+     machine. If there are no errors the pre-processor will, unless  other-
+     wise  directed,  produce  two output files. The first is a header file
+     containing definitions and function prototypes. The second  is  a  'C'
+     source  code file that uses information in the header file. All infor-
+     mation is derived from the file used for input.
+
+     The output files can form the heart of a state driven module  or  pro-
+     gram. The programmer is expected to add code to the empty functions in
+     the 'C' source file or to provide support functions of the same name.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                               July 17, 2024
+
+
+
+
+
+                                   - 3 -
+
+
+     _3. _O_v_e_r_v_i_e_w _O_f _A _S_t_a_t_e _M_a_c_h_i_n_e
+
+          Many programs and modules that are written with real time or data
+     communication  systems in mind are state driven. They are often called
+     _F_i_n_i_t_e _S_t_a_t_e _M_a_c_h_i_n_e_s or _A_u_t_o_m_a_t_o_n_s.
+
+     The unique property of these systems is that  they  always  know  what
+     state  they  are  currently  in.  These  systems  can only change into
+     another state as a result of an event occurring. The system will  fol-
+     low a rigid set of rules to determine what it's new state will be tak-
+     ing into account it's current state and the nature of the  event.  The
+     system  will  only  change  into a valid state. This means that if the
+     event is illegal for the current state or conditions do not  permit  a
+     change  into the new state the system must take action to recover from
+     the error condition.
+
+     When an automaton starts it is in an initial state. An  automaton  may
+     terminate only when it is in a pre-determined state. There may be more
+     than one state in which an  automaton  may  terminate.  The  state  or
+     states  that  an  automaton  may be in or terminate at will not change
+     between invocations of the automaton or during  execution  unless  the
+     state  change  tables  are  modified.  An  automaton will not normally
+     modify it's own state change tables.
+
+
+
+     _4. _A_p_p_l_i_c_a_t_i_o_n_s _T_o _W_h_i_c_h _T_h_e _S_t_a_t_e _P_r_e-_P_r_o_c_e_s_s_o_r _M_a_y _B_e _A_p_p_l_i_e_d
+
+          The state pre-processor was written to  convert  the  information
+     held  in  the  standard  for the ISO's Transport Layer into 'C' source
+     code. All the  information  was  taken  from  an  Annex  dedicated  to
+     describing the state change mechanism. This information is represented
+     by a series of tables. All the events, states, actions  to  be  taken,
+     and predicates for state changes are described in a tabular form.
+
+     The ISO's Session and Presentation Layers in the  OSI  Protocol  Stack
+     also  have state change tables described in tabular form. The informa-
+     tion is described slightly differently but can be  easily  changed  to
+     conform to the syntax required by the pre-processor.
+
+     Although the pre-processor was written with  the  ISO's  standards  in
+     mind  it  can  be used in many other applications. In fact, any module
+     that can, or requires, to be implemented as an automaton  can  benefit
+     from use of the pre-processor.
+
+     A piece of software is a candidate for implementation as an  automaton
+     if  it  has a notion of events and states and can only change state in
+     response to events.
+
+
+
+
+
+
+
+
+
+                               July 17, 2024
+
+
+
+
+
+                                   - 4 -
+
+
+     _5. _T_h_e _I_n_p_u_t _F_i_l_e
+
+          The input file contains all the information required by the state
+     pre-processor  to  produce  the two output files. The pre-processor is
+     coded so that it can understand a defined syntax. The  input  file  is
+     free format.  This syntax is used to describe events, states, actions,
+     predicates and state change tables.  By  looking  at  the  file,  once
+     coded, it is possible to see how the state pre-processor works.
+
+     Before the state pre-processor writes out any data to one of the  out-
+     put  files  it  will check the input data for errors. Errors can arise
+     due to missing or duplicated data, incorrect syntax and  missing  key-
+     words.  Whenever an error is encountered the pre-processor will report
+     the line number in the input file where it thinks the error is.
+
+     The following information is defined in the input file:
+
+             Event Categories (as part of Event definitions)
+             Events
+             States
+             Predicates
+             Actions
+             State Change Tables (including Table Notes)
+
+     Each is discussed in detail.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                               July 17, 2024
+
+
+
+
+
+                                   - 5 -
+
+
+     _5._1 _E_v_e_n_t _C_a_t_e_g_o_r_i_e_s
+
+          Each event must belong to a category. It may be that  all  events
+     belong  to  one  category or that one category holds some events while
+     another category has others. An event can belong to only one category.
+     A  category  is often used to describe the source of an event, eg. all
+     events relating to timers may belong to a category called Time_Events.
+
+     Event categories are determined whilst processing event  declarations.
+     Unlike  previous versions of the State Pre-Processor there is no need,
+     or facility, to define  categories  explicitly  before  use  in  event
+     declarations.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                               July 17, 2024
+
+
+
+
+
+                                   - 6 -
+
+
+     _5._2 _E_v_e_n_t_s
+
+          Events are defined by  declaring  the  name  of  the  event,  the
+     category it belongs to and a description of the event. The description
+     is optional and may be ommitted. If it is included it must be enclosed
+     in  double quotes ("), or be escaped by using the ANSI 'C' or C++ com-
+     ment delimiters, /* ... */ or //.
+
+     Events need not be declared all at the  same  time.  If  an  event  is
+     declared  twice  the pre-processor will display a warning message. The
+     actual entry in the input file could be different, ie. the event could
+     have  a  different  category  or  event  description than the previous
+     declaration, but the pre-processor will not check past the event  name
+     if it has been declared previously. It is wise, therefor, to check all
+     warnings about duplicate events.
+
+     The syntax for defining events is:
+
+     define events
+     begin
+             event_name      category_name   "event description here"
+             event_name      category_name   "event description here"
+             event_name      category_name   "event description here"
+             .
+             .
+             .
+             event_name      category_name   "event description here"
+     end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                               July 17, 2024
+
+
+
+
+
+                                   - 7 -
+
+
+     _5._3 _S_t_a_t_e_s
+
+          The input file requires that all the states  that  the  automaton
+     can  be  in  be defined before use in a state change table. The reason
+     for this is to add to the amount of error checking that can  be  done.
+     By checking the states used in the state change table against the list
+     defined earlier the programmer can be more confident about the  output
+     files.  It  would be easy, say, for a typing error in the state change
+     table to cause a new state to be created. The ISO and CCITT  documents
+     used when developing the state pre-processor defined states before the
+     state change table.
+
+     Another benefit of defining the states before the state  change  table
+     is  that  the states can have explanatory text and doing this once per
+     state is more desirable than somehow declaring the text every time the
+     state is encountered in the state change table.
+
+     The pre-processor will check that a  state  has  not  been  previously
+     declared  in  the  input  file. If it has a warning message is printed
+     along with some other information. If a duplicate is found any  expla-
+     natory text given is ignored.
+
+     As with events, the description field is optional  but,  if  included,
+     must be between double quotes (") or be represented as a comment.
+
+     The syntax for declaring states is:
+
+     define states
+     begin
+             state_name      "explanatory text"
+             state_name      "explanatory text"
+             state_name      "explanatory text"
+             .
+             .
+             .
+             state_name      "explanatory text"
+     end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                               July 17, 2024
+
+
+
+
+
+                                   - 8 -
+
+
+     _5._4 _P_r_e_d_i_c_a_t_e_s
+
+          The definition of a predicate is unlike that of event categories,
+     events  or  states.  The reason is that a predicate is a function that
+     will either return TRUE or FALSE  depending  on  whether  or  not  the
+     predicate is true. The state change table can have a predicate or com-
+     bination of predicates followed by an action list that is to  be  exe-
+     cuted if the predicate list is logically TRUE.
+
+     The fact that a predicate is a function whose return value  is  to  be
+     used  is a problem as the name of the function to be executed when the
+     predicate is encountered is not defined anywhere.
+
+     The state pre-processor  will  prototype  a  predicate  function  and,
+     unless  otherwise  directed,  create  an  empty function to handle the
+     predicate evaluation. The function name used is  the  predicate  name.
+     Predicate names must start with an upper or lower case P followed by a
+     numeric identifier.  The pre-processor is case sensitive so, for exam-
+     ple, P15 is not the same predicate as p15.
+
+     Like event categories, events and states before, duplicate  predicates
+     are  ignored. Again, if a duplicate is found, the rest of the informa-
+     tion provided with the predicate name is not checked. This means  that
+     all  warning  messages  should be investigated. Predicates need not be
+     declared together. Also, the sames rules for  explanatory  text  exist
+     for predicates.
+
+     The predicates are defined in the following manner:
+
+     define predicates
+     begin
+             predicate_name  "explanatory text"
+             predicate_name  "explanatory text"
+             predicate_name  "explanatory text"
+             .
+             .
+             .
+             predicate_name  "explanatory text"
+     end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                               July 17, 2024
+
+
+
+
+
+                                   - 9 -
+
+
+     _5._5 _A_c_t_i_o_n_s
+
+          Actions, like predicates, have functions to be called  associated
+     with  them.   When  an  action is encountered in an action list in the
+     state change table the name of the action is replaced with a  call  to
+     the  corresponding  function  in  the 'C' source output file. The pre-
+     processor will prototype and create an empty function  whose  name  is
+     based  on  the  action identifier. The action identifier consists of a
+     numeric identifier between square brackets, eg.  [05].
+
+     Like all the others before, duplicate  actions  are  ignored.  When  a
+     duplicate  action  is  encountered the pre-processor doesn't check any
+     other information provided.
+
+     The syntax for declaring actions is:
+
+     define actions
+     begin
+             action_name     "explanatory text"
+             action_name     "explanatory text"
+             action_name     "explanatory text"
+             .
+             .
+             .
+             action_name     "explanatory text"
+     end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                               July 17, 2024
+
+
+
+
+
+                                  - 10 -
+
+
+     _5._6 _S_t_a_t_e _C_h_a_n_g_e _T_a_b_l_e (_i_n_c_l_u_d_i_n_g _T_a_b_l_e _N_o_t_e_s)
+
+          The real work done by the pre-processor is when it  converts  the
+     state  change  table(s)  from the input file into 'C' source code. The
+     table(s) contain information about states, the events that can  occur,
+     the predicates and actions associated with each event and, optionally,
+     table notes.
+
+     Before the state change table can be converted to 'C' source code  the
+     pre-processor  has to know what the name of the state variable is. The
+     state variable is used to keep track of the current state of a system.
+     A state variable may be used in many tables or each table can use it's
+     own state variable. When producing the 'C' source file the state  pre-
+     processor  uses  the  most  recently  declared state variable for each
+     table.  The state variable is set to an initial state, ie.  the  state
+     the system will be in before any events occur. The syntax for defining
+     the state variable and it's initial state is:
+
+     define statevarname variablename initialstate some_predefined_state
+
+     If the initial state has not been previously defined the pre-processor
+     will print an error message.
+
+     Table notes and the state/event/action combination are represented  in
+     a  slightly  different  manner to the event, action, etc. definitions.
+     Both are described within a table. The  keyword  _t_a_b_l_e  signifies  the
+     start  of  the  table. A table must have a name. This name becomes the
+     name of the function that handles the state switch mechanism when  the
+     'C'  source  code  is written out. Like the defines before the keyword
+     _b_e_g_i_n marks the beginning proper. It must follow  the  table  declara-
+     tion.
+
+     Once in the table notes and states can be declared. Notes are declared
+     using  the  keyword  _n_o_t_e_s.   Notes have the format note identifier, a
+     number between circular brackets, eg. (24), followed by note text. The
+     notes  are terminated by the keyword _s_t_a_t_e, which signifies the begin-
+     ning of a state declaration or by the keyword _e_n_d.  If a note name  is
+     a  duplicate  of a previous note name a warning message is printed and
+     the rest of the note declaration, ie. the note text, is ignored.   The
+     keyword  _e_n_d  also  terminates  the table. It is important to remember
+     that notes are table specific and if more than one table  is  declared
+     and  the  notes  are  used  in  the  second table they will have to be
+     declared in the second table.
+
+     Like notes, states are declared using the _s_t_a_t_e keyword. This  keyword
+     is  followed  by a state name. If the state name was not declared ear-
+     lier in a 'define states' an error message is printed.  If  the  state
+     name is a duplicate, ie. a 'state statename' is the same as an earlier
+     one in the same table, the state  and  all  it's  related  events  are
+     ignored.  All  warnings  of this nature should be investigated. If the
+     state name has been declared previously but not used  already  in  the
+     current  table the pre-processor will look at the following lines. The
+     lines will be read and considered to be  part  of  the  current  state
+     description  until  the  keyword _s_t_a_t_e or _n_o_t_e_s or _e_n_d is encountered.
+
+
+
+                               July 17, 2024
+
+
+
+
+
+                                  - 11 -
+
+
+     Each of the following lines relates to a  particular  event  that  can
+     occur when the system is in the current state. The format of the event
+     lines are
+
+             event event_name        actions
+             event event_name        predicates : actions;
+             event event_name        predicates: actions; predicates: actions; ...
+
+     The actions are made up of actions, events, table notes, or a combina-
+     tion  of  these. Predicates can be combined with the logical operators
+     _a_n_d, _o_r, and _n_o_t.  Instead of words the following symbols can be used.
+
+             and     &
+             not     ^
+
+     It is important that the predicates and actions following an event are
+     syntactically  correct.  If  they  are not then the pre-processor will
+     print error messages and no output files will be created.  The  format
+     of a each combination will be described in turn.
+
+     Predicates followed by actions take the following form:
+
+             predicate_list : action_list
+
+     The colon (:) and semi-colon (;) must be present, separated by a space
+     and  in  the  correct place. The predicate list can, as mentioned ear-
+     lier, use logical operators to combine predicates. Brackets  can  also
+     be used to group predicates and logical operators together, eg.
+
+             ( P0 & P2 ) or not P1 : action_list
+
+     Brackets can be nested. Another predicate list may  follow  the  semi-
+     colon.  In  this  case  the pre-processor will understand this to mean
+     that if the first set of predicates equals a logical FALSE, the second
+     set  is  to  be  tested.  In other words an if...then...elif...then...
+     contruct is created.
+
+     The action list is made up of notes, events, states, and actions. Each
+     must be separated by a space. A note will become a comment, an event -
+     a function call, an action - a function call, and a state  -  reassign
+     the state variable to the value of the given state.
+
+     If an event is declared twice for a given state the pre-processor will
+     print  a  warning  message  and  skip onto the next event. It does not
+     check the rest of the event description. For this reason all  warnings
+     should be investigated.
+
+     For an example of what the state table declaration can look like, read
+     the example input file for the Transport Layer.
+
+
+
+
+
+
+
+
+                               July 17, 2024
+
+
+
+
+
+                                  - 12 -
+
+
+     _6. _T_h_e _O_u_t_p_u_t _F_i_l_e_s
+
+          As stated above, the state pre-processor will produce two  output
+     files  from  an input file. The first file is a header file. This con-
+     tains definitions of categories, events, and states. Each is  given  a
+     unique  number  such that, eg., no two events can have the same number
+     but  an  event  and  a  state  could.  In  addition  to  defining  the
+     categories,  events  and states, the functions associated with each of
+     the predicates and actions are prototyped. It is up to the  programmer
+     to  decide  whether  or  not  the  values given to the definitions are
+     changed or not and whether or not  to  add  more  information  to  the
+     header file.
+
+     The 'C' source file is both syntactically and semantically correct and
+     can  be  run through a 'C' compiler as is. The programmer should, how-
+     ever, modify the source code. If the state pre-processor was run  with
+     no  special options a set of empty functions will be created. There is
+     one function for each predicate and action. Their names correspond  to
+     predicates  and  actions  defined  in  the  input file. The programmer
+     should fill out the functions to check the required conditions and  to
+     perform  the  necessary  actions. Two other functions are created. The
+     first, called badstate (), is called whenever a bad state  is  entered
+     into  in the state switch mechanism. The second is called badevent ().
+     It is called whenever an event is not catered for in a state. The pro-
+     grammer  should  also  code  these  two functions to do whatever error
+     recovery is required. The only other functions  found  in  the  source
+     code  file  are  those relating to the table declarations in the input
+     file, one per table. The functions are given the name as  supplied  by
+     the  programmer in the input file. These functions may need alteration
+     to suit particular circumstances, eg. where a  table  note  says  that
+     something is to be done but no actions or events are present to do it.
+
+     One other function that needs coding is not created by the state  pre-
+     processor.   It  is called eventout () and is passed the event that is
+     to be sent out.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                               July 17, 2024
+
+
+
+
+
+                                  - 13 -
+
+
+     _7. _U_s_i_n_g _T_h_e _S_t_a_t_e _P_r_e-_P_r_o_c_e_s_s_o_r
+
+          The state pre-processor will take  command  line  arguments  that
+     will  influence  that  way  that  it operates. In the simplest form of
+     invocation the state pre-processor will take an input file and produce
+     two files called states_out.c and states_out.h, eg.
+
+             % ls
+             stateinfile
+             % spp stateinfile
+             .
+             .
+             .
+             % ls
+             stateinfile     states_out.c    states_out.h
+             %
+
+     The command line options are:
+
+             -c   Check only, do not produce any output files.
+
+             -f   No functions, don't create empty functions. This allows
+                  programmers to change just the state switch tables. Remember
+                  to keep a copy of the old ones.
+
+             -o   Use the following filename as a basis for the output files,
+                  eg. '-o tl' will produce the output file tl.c and tl.h
+
+             -v   Display verbose information about what the program is doing,
+                  really only useful when debugging the pre-processor or
+                  trying to find really tricky errors.
+
+     When using the state pre-processor check all warnings that are printed
+     and  check  the  summary at the end. If there are any errors no output
+     files will be created and any previous  output  files  with  the  same
+     names are removed.
+
+     If you are unsure what input file was used to create  an  output  file
+     and  on  what  date,  the  first  few lines of both the 'C' source and
+     header files contain this information.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                               July 17, 2024
+
+

@@ -1,0 +1,10 @@
+when eventout (Client, CommUp) send to Server
+when eventout (Client, Data1) send to Server
+when eventout (Client, Data2) send to Server
+when eventout (Client, Data3) send to Server
+when eventout (Client, Data4) send to Server
+when eventout (Client, CommDn) send to Server
+
+when eventout (Server, CommOk) send to Client
+when eventout (Server, DataOk) send to Client
+

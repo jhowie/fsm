@@ -1,0 +1,264 @@
+
+
+
+
+
+
+                san - A Tool For Animating State Machine Descriptions
+                              (c) John Howie, 1992
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                               July 17, 2024
+
+
+
+
+
+                                   - 2 -
+
+
+     _1. _I_n_t_r_o_d_u_c_t_i_o_n
+
+          This document describes how to use the State Animator to test and
+     debug the description of operation for a Finite State Machine.
+
+
+
+     _2. _O_v_e_r_v_i_e_w _O_f _T_h_e _S_t_a_t_e _A_n_i_m_a_t_o_r
+
+          The state animator is a tool that can be used by  the  programmer
+     to check the description of operation of a finite state machine before
+     implementing it by hand or through use of a tool  such  as  the  state
+     pre-processor.  By  allowing  the programmer to check a description of
+     operation for  errors  or  inconsistences  before  implementation  the
+     number of errors introduced at the design stage should be minimised.
+
+     The state animator takes a file whose contents follow a defined syntax
+     and  checks  it  for  errors. If there are no errors the animator will
+     prompt the user for further instructions. For more details on the for-
+     mat of the input file please consult the handout:
+
+                     spp - A State Pre-Processor
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                               July 17, 2024
+
+
+
+
+
+                                   - 3 -
+
+
+     _3. _U_s_i_n_g _T_h_e _S_t_a_t_e _A_n_i_m_a_t_o_r
+
+          The state animator may be used to test the description of  opera-
+     tion  of a finite state machine by simulating incoming events and set-
+     ting predicate  values.   The  animator  will  respond  by  displaying
+     details of the change of state (if any) in response to incoming events
+     and predicate values (where appropriate).
+
+     The animator will accept a number of commands  at  the  (san)  prompt.
+     These are event, list, quit, set, show, state, source, and table. Each
+     will be discussed in turn.
+
+
+     _3._1 _e_v_e_n_t - _S_i_m_u_l_a_t_e _I_n_c_o_m_i_n_g _E_v_e_n_t_s
+
+          The syntax of this command is:
+
+             (san) event eventname
+
+
+     where eventname is a valid event for the current state in the  current
+     table.  If the event specified does not exist then an error message is
+     printed. Specifying an event that is defined in the  input  file  will
+     cause  the  animator  to enter the current table for the current state
+     and incoming event combination. The result of this is displayed.
+
+     This result may include details of any expressions being evaluated and
+     the  simulation  of  sending  outgoing  events, performing actions and
+     cahnging state.
+
+
+     _3._2 _l_i_s_t - _L_i_s_t _T_a_b_l_e_s, _S_t_a_t_e_s _O_r _E_v_e_n_t_s
+
+          The list command will take, as  it's  argument,  one  of  tables,
+     states  or  events.  Listing  tables  will  cause a list of the tables
+     defined in the input file to be displayed. A  '>'  will  be  displayed
+     next to the current table.
+
+     Listing states will cause a list of the states defined in the  current
+     table  to  be  displayed.  Against  the  current  state  a '>' will be
+     displayed.
+
+     Listing events will cause a list of the valid events for  the  current
+     state to be displayed on the screen.
+
+     Using the list command, the programmer can see what options are avail-
+     able for switching between tables, states within tables, and selecting
+     events for the current state and table.
+
+
+     _3._3 _q_u_i_t - _L_e_a_v_e _T_h_e _A_n_i_m_a_t_o_r _G_r_a_c_e_f_u_l_l_y
+
+          This command will close any open  files  and  leave  the  program
+     gracefully. It should be used in preference to a CTRL-C or CTRL-D.
+
+
+
+                               July 17, 2024
+
+
+
+
+
+                                   - 4 -
+
+
+     _3._4 _s_e_t - _S_e_t _A _P_r_e_d_i_c_a_t_e _T_o _A _V_a_l_u_e
+
+          Predicates may be either  true  or  false.  They  are  used  when
+     evaluating expressions that affect the state change mechanism. The set
+     command takes two arguments. The first is the name of the predicate to
+     change,  or  all, and the second is the value. The value may be one of
+     true, TRUE, false, or FALSE.
+
+
+     _3._5 _s_h_o_w - _S_h_o_w _A _P_r_e_d_i_c_a_t_e _O_r _A_l_l _P_r_e_d_i_c_a_t_e _V_a_l_u_e_s
+
+          This command takes one argument, the name  of  the  predicate  to
+     show. If the name is _a_l_l then all predicate values will be shown. This
+     is useful for attempting to predict the operation of the state  change
+     mechanism where predicates are involved.
+
+
+     _3._6 _s_t_a_t_e - _G_e_t _T_h_e _C_u_r_r_e_n_t _S_t_a_t_e _O_r _C_h_a_n_g_e _T_o _A _S_t_a_t_e _U_n_c_o_n_d_i_t_i_o_n_a_l_l_y
+
+          This command, without any arguments, will display the name of the
+     current  state  for  the  current table. By specifying a current state
+     name for the current table, the animator will  unconditionally  change
+     to the named state, to which the next incoming event will be applied.
+
+
+     _3._7 _s_o_u_r_c_e - _R_e_a_d _s_a_n _C_o_m_m_a_n_d_s _F_r_o_m _A _F_i_l_e
+
+          If a series of commands normally typed at the  (san)  prompt  are
+     used  frequently,  it  may be worthwhile typing them into a text file,
+     one to a line. The commands in this text file may then be executed  by
+     using  the  source  command.  The only argument to this command is the
+     name of the file to read commands from.
+
+     Once the end of file has been reached the user is  prompted  for  more
+     commands in the usual manner, ie. at the (san) prompt.
+
+
+     _3._8 _t_a_b_l_e - _G_e_t _T_h_e _N_a_m_e _O_f _T_h_e _C_u_r_r_e_n_t _T_a_b_l_e _O_r _C_h_a_n_g_e _T_a_b_l_e
+
+          This command, without any arguments, displays  the  name  of  the
+     table to which the current state and an incoming event are applied. By
+     supplying an argument, which is a valid table name, the animator  will
+     use the named table in all future operations.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                               July 17, 2024
+
+
