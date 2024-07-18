@@ -33,5 +33,8 @@ NOTES:
 3) The 'san' tool was written pre-threads, on SunOS. It could easily benefit from
    parallelism, to make it far more easy to use.
 
+4) The compiler waarnings in graph.c can be easily fixed by creating a shim
+   default function for comparing nodes and calculating lengths.
+
 Please feel free to submit bugs, but I might move slowly in addressing bug
 reports.
