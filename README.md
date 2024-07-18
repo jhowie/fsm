@@ -38,3 +38,7 @@ NOTES:
 
 Please feel free to submit bugs, but I might move slowly in addressing bug
 reports.
+
+John Howie
+john@howieconsultinginc.com
+
